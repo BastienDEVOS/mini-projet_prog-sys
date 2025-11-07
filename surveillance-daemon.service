@@ -1,0 +1,11 @@
+[Unit]
+Description=Daemon de surveillance de fichiers
+After=network.target
+
+[Service]
+Type=forking
+ExecStart=/home/bastien/mini-projet_prog-sys/bin/daemon
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
