@@ -21,33 +21,28 @@ static volatile sig_atomic_t running = 1;
 char watch_dir[256] = DEFAULT_WATCH_DIR;
 char mq_name[256] = DEFAULT_MQ_NAME;
 
-/* Gestion des signaux */
-void handle_sigterm(int sig) {
-    (void)sig;
-    running = 0;
-}
-
-void handle_sighup(int sig) {
-    (void)sig;
-    syslog(LOG_INFO, "SIGHUP reçu, relecture configuration...");
+void load_config(void) {
     FILE *f = fopen(CONFIG_FILE, "r");
-    if (!f) {
-        syslog(LOG_ERR, "Impossible de relire config: %s", strerror(errno));
-        return;
-    }
+    if (!f) syslog(LOG_INFO,"Configuation introuvable");
     char line[256];
     while (fgets(line, sizeof(line), f)) {
-        if (line[0] == '#' || line[0] == '\n') continue;
+        if (line[0]=='#'||line[0]=='\n') continue;
         char key[128], value[128];
-        if (sscanf(line, "%127[^=]=%127s", key, value) == 2) {
-            if (strcmp(key, "WATCH_DIR") == 0) strncpy(watch_dir, value, sizeof(watch_dir));
-            if (strcmp(key, "MQ_NAME") == 0) strncpy(mq_name, value, sizeof(mq_name));
+        if (sscanf(line,"%127[^=]=%127s",key,value)==2){
+            if(strcmp(key,"WATCH_DIR")==0) strncpy(watch_dir,value,sizeof(watch_dir));
+            if(strcmp(key,"MQ_NAME")==0) strncpy(mq_name,value,sizeof(mq_name));
         }
     }
     fclose(f);
 }
 
-/* Daemonisation classique */
+void handle_sigterm(int sig) { (void)sig; running = 0; }
+void handle_sighup(int sig) {
+    (void)sig;
+    syslog(LOG_INFO,"SIGHUP reçu, relecture config...");
+    load_config();
+}
+
 void daemonize(void) {
     pid_t pid = fork();
     if (pid < 0) exit(EXIT_FAILURE);
