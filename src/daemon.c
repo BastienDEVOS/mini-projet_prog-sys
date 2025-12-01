@@ -23,14 +23,15 @@ char mq_name[256] = DEFAULT_MQ_NAME;
 
 void load_config(void) {
     FILE *f = fopen(CONFIG_FILE, "r");
-    if (!f) syslog(LOG_INFO,"Configuation introuvable");
+    if (!f) return;
+
     char line[256];
     while (fgets(line, sizeof(line), f)) {
-        if (line[0]=='#'||line[0]=='\n') continue;
+        if (line[0] == '#' || line[0] == '\n') continue;
         char key[128], value[128];
-        if (sscanf(line,"%127[^=]=%127s",key,value)==2){
-            if(strcmp(key,"WATCH_DIR")==0) strncpy(watch_dir,value,sizeof(watch_dir));
-            if(strcmp(key,"MQ_NAME")==0) strncpy(mq_name,value,sizeof(mq_name));
+        if (sscanf(line, "%127[^=]=%127s", key, value) == 2) {
+            if (strcmp(key, "WATCH_DIR") == 0) strncpy(watch_dir, value, sizeof(watch_dir));
+            if (strcmp(key, "MQ_NAME") == 0) strncpy(mq_name, value, sizeof(mq_name));
         }
     }
     fclose(f);
@@ -60,22 +61,6 @@ void daemonize(void) {
     close(STDIN_FILENO);
     close(STDOUT_FILENO);
     close(STDERR_FILENO);
-}
-
-void load_config(void) {
-    FILE *f = fopen(CONFIG_FILE, "r");
-    if (!f) return;
-
-    char line[256];
-    while (fgets(line, sizeof(line), f)) {
-        if (line[0] == '#' || line[0] == '\n') continue;
-        char key[128], value[128];
-        if (sscanf(line, "%127[^=]=%127s", key, value) == 2) {
-            if (strcmp(key, "WATCH_DIR") == 0) strncpy(watch_dir, value, sizeof(watch_dir));
-            if (strcmp(key, "MQ_NAME") == 0) strncpy(mq_name, value, sizeof(mq_name));
-        }
-    }
-    fclose(f);
 }
 
 int main(void) {
